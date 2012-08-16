@@ -12,10 +12,10 @@ for f in queue/*; do
     echo "KVM pid is $KVM_PID"
     #Sleep a maximum of 120 minutes
     for minute in {1..120}; do 
+        sleep 1m
         if [[ ! -d "/proc/$KVM_PID" ]]; then
             break
         fi
-        sleep 1m
     done
     if [[ -d "/proc/$KVM_PID" ]]; then
         kill -9 "$KVM_PID"

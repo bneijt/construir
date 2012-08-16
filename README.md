@@ -10,24 +10,21 @@ A debian system is booted with a root filesystem in snapshot mode and a job imag
 
 A simple job tracker will move job images from a queue folder, uncompress them, boot the machine with the job image, kill the machine if it takes more then two hours to complete and finally place the compressed job image in the done folder.
 
+Extracting the information from the job and automatically creating jobs for certain situations is the second phase of the project.
 
 Current image
 =============
 The current worker image has debian image with Vagrant like credentials:
 - Root password: vagrant
 
-TODO
-- Real job control, with a wait on the pid and a timeout instead of a polling loop.
-- Create a script to package a directory into a FS image.
-
-- IO event based polling of queue, only pick up a job when a file is closed to make sure upload is completed.
-- Create a job configuration which contains dependencies to allow for jobs to have precompiled stuff included.
-- Configure an FTP server to allow for job uploads
-- Add security by checking the uploaded job filetype (just with file)
-- Clean up the done directory periodically
-
-
-FS todo: disable journal, add runjob script to system etc. Add mount raw image to git repo
+Roadmap
+=======
+- Create a real job controlling system, not a simple script that polls, among it's tasks will be
+    - Remove queue and done jobs older then X amount of time
+    - Start and kill the server without polling
+    - Wait for a file to be uploaded and closed again before running the job (using inotify features of the kernel)
+- Create example jobs and have a management script that can automatically package a job and extract the result.
+- Add a method of including precompiled or earlier compiled jobs using some kind of dependency tracking or long lived job outputs?
 
 Creating a base image by hand
 =============================
