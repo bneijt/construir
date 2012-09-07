@@ -22,7 +22,10 @@ Roadmap
     - Remove queue and done jobs older then X amount of time
     - Start and kill the server without polling
     - Wait for a file to be uploaded and closed again before running the job (using inotify features of the kernel)
-    - Check the file for a bzip or xz compression marker (determine wether we are going to use bzip2 or xz)
+
+Future
+    - Require all job images to be compressed with XZ.
+    - Check the uncompressed size of each image as a configurable maximum image size.
 - Create example jobs and have a management script that can automatically package a job and extract the result.
 - Add a method of including pre-compiled or earlier compiled jobs using some kind of dependency tracking or long lived job outputs? May be a script to copy multiple images into one image.
 
