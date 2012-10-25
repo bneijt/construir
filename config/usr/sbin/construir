@@ -1,0 +1,10 @@
+#!/bin/bash
+/bin/rm -rf /job/zero
+cd /job
+export PATH="/job/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+/job/construir
+/bin/dd if=/dev/zero of=/job/zero
+/sbin/poweroff
+
+
+
