@@ -12,7 +12,7 @@ fi
 for f in queue/*; do
     START="`date +"%F-%H.%M"`"
     mv "$f" job.img
-    "$EMULATOR" -net none -no-fd-bootchk -nographic -enable-kvm -no-reboot -drive file=debian.img,index=0,media=disk,snapshot=on -drive file=job.img,index=1,media=disk &
+    "$EMULATOR" -net none -no-fd-bootchk -nographic -enable-kvm -no-reboot -drive file=debian.raw,index=0,media=disk,snapshot=on -drive file=job.img,index=1,media=disk &
     KVM_PID="$!"
     echo "KVM pid is $KVM_PID"
     #Sleep a maximum of 120 minutes
