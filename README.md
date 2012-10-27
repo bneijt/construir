@@ -7,14 +7,11 @@ How it works
 ============
 A Debian system is booted with a root file system in snapshot mode and a job image (file system image) in writable mode. The job can then create, delete and add files anywhere with root privileges. After the job is done, the system is automatically shut down.
 
-A simple job tracker will move job images from a queue folder, uncompress them, boot the machine with the job image, kill the machine if it takes more then two hours to complete and finally place the compressed job image in the done folder.
-
-Extracting the information from the job and automatically creating jobs for certain situations is the second phase of the project.
+A simple job tracker will move job images from a queue folder, boot the machine with the job image, kill the machine if it takes more then two hours to complete and finally place the resulting job image in the done folder in `xz` compressed form.
 
 Current image
 =============
-The current worker image has Debian image with Vagrant like credentials:
-- Root password: vagrant
+You can download a basic debian image with the software installed from github. The password for the root user is `root`.
 
 Roadmap
 =======
@@ -36,12 +33,15 @@ To create the base image, I did the following:
  - Use the Debian `netinst` image in expert install mode to create a minimal Debian installation
  - Remove unneeded packages where appropriate
  - Mount the disk image separately (using the `rawmount.sh` script running it as root)
- - Copy the files to their right location:
-    - `40_custom` to `/etc/grub.d/` to add the Job boot option to grub
-    - grub to `/etc/default/` to make Job the default job selected and boot time to 2 seconds
-    - `runjob.sh` to `/root/` to start the job and `poweroff` the machine afterwords
- - Boot the image and run `update-grub` to activate the new grub configuration.
- 
+ - Copy all the files from the `config` directory onto the filesystem.
+ - Boot the system and run `update-rc.d construir defaults`
+
+The `/usr/sbin/construir` script will try to run a job script from `/job/bin/construir`,
+create a /job/zero file and poweroff.
+This means you will no longer be able to boot and log in without a job. 
+To disable it, use the `rawmount.sh` script to mount and comment out
+the `poweroff` in `/usr/sbin/construir`. 
+
 There is currently no script for this process, however you can download a pre-made Debian image from the download section.
 
 Creating a job image by hand
