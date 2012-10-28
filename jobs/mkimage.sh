@@ -7,12 +7,12 @@ fi
 
 set -e
 if [ ! -f job.img ]; then
-    dd if=/dev/zero of=job.img bs=1024 count=2M
+    truncate -s 1G job.img
 fi
 mkfs.ext4 -F -O ^has_journal job.img
-sudo mount -o loop job.img tmp
+fuse-ext2 -o rw+ job.img tmp
 cp -r "$JOBDIR"/* tmp
 sleep 1
-sudo umount tmp
+fusermount -u tmp
 
 

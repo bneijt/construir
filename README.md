@@ -7,7 +7,6 @@ Status
 =======
 The `jobrunner.py` script will run job files form the queue directory. Creating jobs needs to still be easier.
 
-TODO: jobrunner needs polish and configuration options.
 
 How it works
 ============
@@ -21,8 +20,6 @@ Execute `./jobrunner.py`, then add a job image to the `queue` directory to see i
 Current image
 =============
 You can download a basic debian image with the software installed from github. The password for the root user is `root`.
-
-
 
 
 Creating a base image by hand
