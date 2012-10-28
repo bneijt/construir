@@ -1,0 +1,6 @@
+#!/bin/bash
+date > job.txt
+set >> job.txt
+ps aux >> job.txt
+lsb_release >> job.txt
+date >> job.txt
