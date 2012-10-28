@@ -82,7 +82,7 @@ class JobRunner(threading.Thread):
 
     def saveJobImage(self):
         assert self.currentJob
-        outputName = os.path.basename(self.currentJob.path) + "_" + datetime.datetime.now().isoformat()
+        outputName =  datetime.datetime.now().strftime("%Y-%m-%sT%H:%M:%S%z") + "_" + os.path.basename(self.currentJob.path)
         self.logger.info("Saving output to: " + outputName)
         os.rename(
             "job.img",
