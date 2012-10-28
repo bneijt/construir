@@ -24,6 +24,13 @@ class JobLogger:
     def error(self, msg):
         self.logger.error("[%s] %s" % (self.jobName, msg))
 
+class Job:
+    def __init__(self, path):
+        self.path = path
+        self.size = os.path.getsize(path)
+    def changed(self):
+        return self.size != os.path.getsize(self.path)
+
 class JobRunner(threading.Thread):
     vmProcess = None
     currentJob = None
@@ -32,8 +39,11 @@ class JobRunner(threading.Thread):
         self.logger = JobLogger(None)
 
     def switchJob(self):
-        self.logger.debug("Switching to " + str(self.currentJob))
-        self.logger = JobLogger(self.currentJob)
+        jobName = "None"
+        if self.currentJob:
+            jobName = str(self.currentJob.path)
+        self.logger.debug("Switching to " + jobName)
+        self.logger = JobLogger(jobName)
 
     def waitForEndOfRunningJob(self):
         if self.vmProcess != None:
@@ -51,7 +61,7 @@ class JobRunner(threading.Thread):
 
     def startJob(self):
         self.logger.info("Start")
-        os.rename(self.currentJob, "job.img")
+        os.rename(self.currentJob.path, "job.img")
         assert os.path.exists("job.img")
         assert os.path.exists("debian.raw")
         self.vmProcess = subprocess.Popen(args = [
@@ -71,7 +81,8 @@ class JobRunner(threading.Thread):
         self.logger.info("Started with pid %i" % self.vmProcess.pid)
 
     def saveJobImage(self):
-        outputName = os.path.basename(self.currentJob) + "_" + datetime.datetime.now().isoformat()
+        assert self.currentJob
+        outputName = os.path.basename(self.currentJob.path) + "_" + datetime.datetime.now().isoformat()
         self.logger.info("Saving output to: " + outputName)
         os.rename(
             "job.img",
@@ -97,8 +108,11 @@ class JobRunner(threading.Thread):
                 if self.currentJob == None:
                     break
                 self.switchJob()
-                if not os.path.exists(self.currentJob):
+                if not os.path.exists(self.currentJob.path):
                     self.logger.warn("File missing, skipping job")
+                    continue
+                if self.currentJob.changed():
+                    self.logger.warn("Job file changed in transit, skipping job")
                     continue
                 self.startJob()
                 self.waitForEndOfRunningJob()
@@ -109,16 +123,21 @@ class JobRunner(threading.Thread):
 
 
 class QueueEventHandler(pyinotify.ProcessEvent):
+    mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CLOSE_NOWRITE | pyinotify.IN_MOVED_TO
+
     def process_IN_CLOSE_WRITE(self, event):
         if event.name:
             self.verifyAndQueue(os.path.join(event.path, event.name))
     def process_IN_CLOSE_NOWRITE(self, event):
         if event.name:
             self.verifyAndQueue(os.path.join(event.path, event.name))
+    def process_IN_MOVED_TO(self, event):
+        if event.name:
+            self.verifyAndQueue(os.path.join(event.path, event.name))
 
     def verifyAndQueue(self, jobPath):
         logging.info("Adding job to queue: %s", jobPath)
-        jobQueue.put(jobPath)
+        jobQueue.put(Job(jobPath))
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
@@ -129,7 +148,7 @@ if __name__ == "__main__":
     jr = JobRunner()
     jr.start()
     notifier = pyinotify.Notifier(wm, QueueEventHandler())
-    wdd = wm.add_watch('queue', pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CLOSE_NOWRITE , rec=False)
+    wdd = wm.add_watch('queue', QueueEventHandler.mask , rec=False)
     notifier.loop()
     jobQueue.put(None)
     logging.info("Joining with jobrunner")
