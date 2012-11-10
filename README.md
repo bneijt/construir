@@ -1,7 +1,7 @@
-Open build system
-=================
+Construir: _everybody can join_
+===============================
+The mean goal of construir is to set up a secure way to allow a build system to build jobs submitted by other people or a centralized server.
 
-    Any computer should be able to open up it's doors to build jobs for the open source community.
 
 Status
 =======
