@@ -32,10 +32,11 @@ class Job:
 
     def size(self):
         '''Size for this job image'''
-        return self.jobSize() + self.extraBlocks()
+        return self.jobSize() + self.extraSpace
 
-    def extraBlocks(self):
-        return 10
+    def setExtraSpace(self, size):
+        self.extraSpace = size
+
 
     def jobSize(self):
         total = 0
@@ -62,6 +63,10 @@ def main():
     parser = argparse.ArgumentParser(description='Create construir job images from a directory')
     parser.add_argument('job_directory',
                    help='The directory to create a job image from')
+    parser.add_argument('--extra-space', dest="extra_space",
+                   default=10, type=int,
+                   help='The number of extra megabytes needed in image')
+
     config = parser.parse_args()
     if not os.path.exists(config.job_directory):
         logging.error("Given job directory '%s' does not exist" % config.job_directory)
@@ -76,9 +81,11 @@ def main():
         logging.error("Job directory did not contain construir script")
         logging.error("Missing file '%s'" % construirScript)
         return 1
+
     #Calculate job size
     job = Job(config.job_directory)
     job.setOutputImage(job.basename() + ".ext2")
+    job.setExtraSpace(config.extra_space * 1024)
     job.gen()
 
 
