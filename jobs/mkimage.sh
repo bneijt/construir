@@ -5,6 +5,8 @@ if [ ! -d "$JOBDIR" ]; then
     exit 1
 fi
 
+which fuse-ext2 || echo "This script requires fuse-ext2" && exit
+
 set -e
 if [ ! -f job.img ]; then
     truncate -s 1G job.img
