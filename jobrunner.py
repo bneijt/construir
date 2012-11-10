@@ -7,6 +7,7 @@ import subprocess
 import time
 import logging
 import datetime
+import argparse
 
 wm = pyinotify.WatchManager()
 jobQueue = Queue.Queue()
@@ -34,9 +35,10 @@ class Job:
 class JobRunner(threading.Thread):
     vmProcess = None
     currentJob = None
-    def __init__(self):
+    def __init__(self, config):
         threading.Thread.__init__(self)
         self.logger = JobLogger(None)
+        self.config = config
 
     def switchJob(self):
         jobName = "None"
@@ -50,7 +52,7 @@ class JobRunner(threading.Thread):
             self.logger.info("Waiting for job to finish")
             timeout = time.time() + 60*5
             while self.vmProcess.returncode == None and time.time() < timeout:
-                #TODO Use vmProcess.wait(timeout=20) when 3.3 has hit the servers
+                #TODO Use vmProcess.wait(timeout=20) when 3.3 has hits the debian servers
                 self.vmProcess.poll()
                 time.sleep(20)
             if self.vmProcess.returncode == None:
@@ -86,7 +88,7 @@ class JobRunner(threading.Thread):
         self.logger.info("Saving output to: " + outputName)
         os.rename(
             "job.img",
-            os.path.join("done", outputName)
+            os.path.join(self.config.done, outputName)
             )
         assert not os.path.exists("job.img")
 
@@ -124,31 +126,44 @@ class JobRunner(threading.Thread):
 
 class QueueEventHandler(pyinotify.ProcessEvent):
     mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CLOSE_NOWRITE | pyinotify.IN_MOVED_TO
+    def __init__(self, config):
+        pyinotify.ProcessEvent(self)
+        self.config = config
 
     def process_IN_CLOSE_WRITE(self, event):
         if event.name:
-            self.verifyAndQueue(os.path.join(event.path, event.name))
+            self.verifyAndQueue(event.name)
     def process_IN_CLOSE_NOWRITE(self, event):
         if event.name:
-            self.verifyAndQueue(os.path.join(event.path, event.name))
+            self.verifyAndQueue(event.name)
     def process_IN_MOVED_TO(self, event):
         if event.name:
-            self.verifyAndQueue(os.path.join(event.path, event.name))
+            self.verifyAndQueue(event.name)
 
-    def verifyAndQueue(self, jobPath):
-        logging.info("Adding job to queue: %s", jobPath)
-        jobQueue.put(Job(jobPath))
+    def verifyAndQueue(self, jobName):
+        logging.info("Adding job to queue: %s", jobName)
+        jobQueue.put(Job(os.path.join(self.config.queue, jobName)))
 
-if __name__ == "__main__":
+def main():
+    parser = argparse.ArgumentParser(description='Run construir jobs entered into the queue directory')
+    parser.add_argument("--queue", help = "Directory to queue", default = "./queue")
+    parser.add_argument("--done", help = "Directory to store finalized jobs", default = "./done")
+
+    config = parser.parse_args()
+
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
-    if not os.path.exists("done"):
-        os.mkdir("done")
-    if not os.path.exists("queue"):
-        os.mkdir("queue")
-    jr = JobRunner()
+    if not os.path.exists(config.done):
+        os.mkdir(config.done)
+    if not os.path.exists(config.queue):
+        os.mkdir(config.queue)
+    if not os.path.exists("debian.raw"):
+        logging.error("Could not find guest image ./debian.raw")
+        return 1
+
+    jr = JobRunner(config)
     jr.start()
-    notifier = pyinotify.Notifier(wm, QueueEventHandler())
-    wdd = wm.add_watch('queue', QueueEventHandler.mask , rec=False)
+    notifier = pyinotify.Notifier(wm, QueueEventHandler(config))
+    wdd = wm.add_watch(config.queue, QueueEventHandler.mask , rec=False)
     notifier.loop()
     jobQueue.put(None)
     logging.info("Joining with jobrunner")
@@ -157,4 +172,6 @@ if __name__ == "__main__":
 
 
 
+if __name__ == "__main__":
+    main()
 
