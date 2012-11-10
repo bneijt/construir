@@ -42,7 +42,6 @@ class Job:
         for dirpath, dirnames, filenames in os.walk(self.path):
             total += sum([os.path.getsize(os.path.join(dirpath, f)) for f in filenames])
             total += os.path.getsize(dirpath)
-            print dirpath
         return (total / 1024)
 
     def basename(self):
@@ -53,7 +52,7 @@ class Job:
         assert self.path
         assert os.path.exists(self.path)
         cmd = ['genext2fs', '--root', self.path, '--size-in-blocks', str(self.size()), self.image]
-        status = subprocess.call(cmd)#, stdout=NULL, stderr=NULL)
+        status = subprocess.call(cmd, stdout=NULL, stderr=NULL)
         return status == 0
 
     def __str__(self):
@@ -72,7 +71,11 @@ def main():
     if not genext2fs_available():
         logging.error("Could not find genext2fs to create image")
         return 1
-
+    construirScript = os.path.join(config.job_directory, 'bin', 'construir')
+    if not os.path.exists(construirScript):
+        logging.error("Job directory did not contain construir script")
+        logging.error("Missing file '%s'" % construirScript)
+        return 1
     #Calculate job size
     job = Job(config.job_directory)
     job.setOutputImage(job.basename() + ".ext2")
