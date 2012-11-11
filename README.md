@@ -5,7 +5,7 @@ The mean goal of construir is to set up a secure way to allow a build system to 
 
 Status
 =======
-The `jobrunner.py` script will run job files form the queue directory. Creating jobs needs to still be easier.
+The `jobrunner.py` script will run job files form the queue directory. Creating job images is done using the `jobs/mkjob.py` script, which takes a directory as it's first argument.
 
 
 How it works
@@ -42,18 +42,6 @@ There is currently no script for this process, however you can download a pre-ma
 
 Creating a job image
 ====================
-By hand
--------
-Creating job images is simple. Job images are single files with a readable file system (for example `ext2`).
-
- - Create an empty file `dd if=/dev/zero of=job.img bs=1M count=10`, where count is the number of megabytes.
- - Format the empty file: `mkfs.ext2 job.img`
- - Mount the image and add your files files to it. Use `mkdir jobdir` then `sudo mount -o loop job.img jobdir` and add your job files.
-
-Using `mkimage.sh`
-------------------
-The `mkimage.sh` script in the jobs directory takes a directory as an argument and performs the above steps for you. Because of having to mount the job image as root, you will be asked for your `sudo` password.
-
-The resulting image will be called `job.img`
+Create a directory with a bash script under the path `bin/construir` and package it up into an ext2 filesystem image. Use the `jobs/mkjob.py` script with the directory as an argument, which will create an ext2 image with the same name as the directory.
 
 
