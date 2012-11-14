@@ -46,8 +46,8 @@ class Job:
         assert self.path
         assert os.path.exists(self.path)
         cmd = ['genext2fs', '--root', self.path, '--size-in-blocks', str(self.size()), self.image]
-        status = subprocess.call(cmd, stdout=NULL, stderr=NULL)
-        return status == 0
+        status = subprocess.call(cmd)
+        assert status == 0
 
     def __str__(self):
         return "Job '%s' -> '%s'" %(self.path, self.image)
