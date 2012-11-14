@@ -24,19 +24,12 @@ class Job:
     def setOutputImage(self, outputImage):
         self.image = outputImage
 
-    def truncateOutputSize(self, size):
-        assert self.path
-        assert self.image
-        status = subprocess.call(['truncate', '--size=' + size, self.image], stdout=NULL, stderr=NULL)
-        return status == 0
-
     def size(self):
         '''Size for this job image'''
         return self.jobSize() + self.extraSpace
 
     def setExtraSpace(self, size):
         self.extraSpace = size
-
 
     def jobSize(self):
         total = 0
