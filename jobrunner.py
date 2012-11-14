@@ -86,7 +86,7 @@ class JobRunner(threading.Thread):
 
     def saveJobImage(self):
         assert self.currentJob
-        outputName =  datetime.datetime.now().strftime("%Y-%m-%sT%H:%M:%S%z") + "_" + os.path.basename(self.currentJob.path) + ".bz2"
+        outputName =  datetime.datetime.now().strftime("%Y-%m-%sT%H_%M_%S") + "_" + os.path.basename(self.currentJob.path) + ".bz2"
         self.logger.info("Saving output to: " + outputName)
         outputPath = os.path.join(self.config.done, outputName)
         bz = subprocess.Popen(["bzip2", "-c", "job.img"],
