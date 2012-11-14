@@ -57,7 +57,7 @@ def main():
     parser.add_argument('job_directory',
                    help='The directory to create a job image from')
     parser.add_argument('--extra-space', dest="extra_space",
-                   default=10, type=int,
+                   default=15, type=int,
                    help='The number of extra megabytes needed in image')
 
     config = parser.parse_args()
