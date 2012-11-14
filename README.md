@@ -7,6 +7,7 @@ Status
 =======
 The `jobrunner.py` script will run job files form the queue directory. Creating job images is done using the `jobs/mkjob.py` script, which takes a directory as it's first argument.
 
+First release is still to be made, nothing has a version number yet.
 
 How it works
 ============
@@ -28,6 +29,7 @@ To create the base image, I did the following:
 
  - Use the Debian `netinst` image in expert install mode to create a minimal Debian installation
  - Remove unneeded packages where appropriate
+ - Install build-essential and bzip2
  - Mount the disk image separately (using the `rawmount.sh` script running it as root)
  - Copy all the files from the `config` directory onto the filesystem.
  - Boot the system and run `update-rc.d construir defaults`
