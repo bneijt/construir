@@ -9,6 +9,8 @@ import logging
 import datetime
 import argparse
 
+NULL = file(os.path.devnull, 'w')
+
 wm = pyinotify.WatchManager()
 jobQueue = Queue.Queue()
 
@@ -78,18 +80,22 @@ class JobRunner(threading.Thread):
             "file=debian.raw,index=0,media=disk,snapshot=on",
             "-drive",
             "file=job.img,index=1,media=disk"],
-            stdin=None, stdout=file("/dev/null", 'w'), stderr=subprocess.STDOUT,
+            stdin=None, stdout=NULL, stderr=subprocess.STDOUT,
             close_fds=True)
         self.logger.info("Started with pid %i" % self.vmProcess.pid)
 
     def saveJobImage(self):
         assert self.currentJob
-        outputName =  datetime.datetime.now().strftime("%Y-%m-%sT%H:%M:%S%z") + "_" + os.path.basename(self.currentJob.path)
+        outputName =  datetime.datetime.now().strftime("%Y-%m-%sT%H:%M:%S%z") + "_" + os.path.basename(self.currentJob.path) + ".bz2"
         self.logger.info("Saving output to: " + outputName)
-        os.rename(
-            "job.img",
-            os.path.join(self.config.done, outputName)
-            )
+        outputPath = os.path.join(self.config.done, outputName)
+        bz = subprocess.Popen(["bzip2", "-c", "job.img"],
+            stdin=None, stdout=file(outputPath, "w"), stderr=subprocess.PIPE)
+        (stdoutdata, stderrdata) = bz.communicate()
+        bz.wait()
+        if len(stderrdata):
+            logger.error("bzip2 reported errors '%s'" % stderrdata)
+        os.unlink("job.img")
         assert not os.path.exists("job.img")
 
     def moveJobToDone(self):
