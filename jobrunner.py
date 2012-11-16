@@ -86,16 +86,20 @@ class JobRunner(threading.Thread):
 
     def saveJobImage(self):
         assert self.currentJob
-        outputName =  datetime.datetime.now().strftime("%Y-%m-%sT%H_%M_%S") + "_" + os.path.basename(self.currentJob.path) + ".bz2"
+        outputName =  datetime.datetime.now().strftime("%Y-%m-%sT%H_%M_%S") + "_" + os.path.basename(self.currentJob.path)
         self.logger.info("Saving output to: " + outputName)
         outputPath = os.path.join(self.config.done, outputName)
-        bz = subprocess.Popen(["bzip2", "-c", "job.img"],
-            stdin=None, stdout=file(outputPath, "w"), stderr=subprocess.PIPE)
-        (stdoutdata, stderrdata) = bz.communicate()
-        bz.wait()
-        if len(stderrdata):
-            logger.error("bzip2 reported errors '%s'" % stderrdata)
-        os.unlink("job.img")
+        if self.config.disable_compression:
+            os.rename("job.img", outputPath)
+        else:
+            outputPath = outputPath + ".bz2"
+            bz = subprocess.Popen(["bzip2", "-c", "job.img"],
+                stdin=None, stdout=file(outputPath, "w"), stderr=subprocess.PIPE)
+            (stdoutdata, stderrdata) = bz.communicate()
+            bz.wait()
+            if len(stderrdata):
+                logger.error("bzip2 reported errors '%s'" % stderrdata)
+            os.unlink("job.img")
         assert not os.path.exists("job.img")
 
     def moveJobToDone(self):
@@ -154,9 +158,9 @@ def main():
     parser = argparse.ArgumentParser(description='Run construir jobs entered into the queue directory')
     parser.add_argument("--queue", help = "Directory to queue", default = "./queue")
     parser.add_argument("--done", help = "Directory to store finalized jobs", default = "./done")
+    parser.add_argument("--disable-compression", help = "Do not compress the job output", action="store_true")
 
     config = parser.parse_args()
-
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
     if not os.path.exists(config.done):
         os.mkdir(config.done)
