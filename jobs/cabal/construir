@@ -1,0 +1,27 @@
+#!/bin/bash
+export PATH=/root/.cabal/bin:/job/bin:$PATH
+export HOME=/root
+function job(){
+    dpkg -i debs/*.deb
+    rm -rf /job/debs
+    mv /job/pkg/.cabal /root/
+    cabal install PKGNAME > /job/cabal_output.txt 2>&1
+}
+function cleanup(){
+    echo "----- CLEANUP"
+    rm -rf /job/bin
+    rm -rf /job/lib
+    rm -rf /job/share
+    rm -rf /job/pkg
+}
+function versions(){
+    echo "cabal"
+    cabal --version
+    echo "ghc"
+    ghc --version
+}
+
+versions > /job/versions.txt 2>&1
+job > /job/output.txt 2>&1
+cleanup >> /job/output.txt 2>&1
+
