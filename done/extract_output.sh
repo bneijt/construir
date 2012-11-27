@@ -15,4 +15,5 @@ else
     echo "$IMAGE does not contain an output directory"
 fi
 fusermount -u "$MOUNTPOINT"
+rmdir "$MOUNTPOINT"
 
