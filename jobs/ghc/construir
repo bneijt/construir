@@ -17,7 +17,6 @@ function job(){
     cleanup
     cd /job/output
     tar -cf opt_ghc-GHC_VERSION.tar /opt
-    cp -r /opt /job/output
 }
 
 job > /job/output/output.txt 2>&1
