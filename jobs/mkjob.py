@@ -37,7 +37,8 @@ class Job:
             total += sum([os.path.getsize(os.path.join(dirpath, f)) for f in filenames])
             total += os.path.getsize(dirpath)
         return (total / 1024)
-
+    def numberOfInodesForSize(self, size):
+        return int(size / 4)
     def basename(self):
         return os.path.basename(self.path)
 
@@ -45,7 +46,12 @@ class Job:
         assert self.image
         assert self.path
         assert os.path.exists(self.path)
-        cmd = ['genext2fs', '--root', self.path, '--size-in-blocks', str(self.size()), self.image]
+        jobSize = self.size()
+        cmd = ['genext2fs', 
+            '--root', self.path,
+            '--size-in-blocks', str(jobSize),
+            '--number-of-inodes', str(self.numberOfInodesForSize(jobSize)),
+            self.image]
         status = subprocess.call(cmd)
         assert status == 0
 
