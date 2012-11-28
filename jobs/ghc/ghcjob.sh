@@ -1,7 +1,7 @@
 #!/bin/bash
 cd "`dirname "$0"`"
 set -e -x
-GHC_VERSION=7.6.1
+GHC_VERSION=7.4.2
 
 mkdir -p job/bin
 if [ ! -f "job/ghc-${GHC_VERSION}.tar.bz2" ]; then
