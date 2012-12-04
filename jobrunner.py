@@ -68,9 +68,8 @@ class JobRunner(threading.Thread):
         os.rename(self.currentJob.path, "job.img")
         assert os.path.exists("job.img")
         assert os.path.exists("debian.raw")
-        self.vmProcess = subprocess.Popen(args = [
+        args = [
             "/usr/bin/kvm",
-            "-net", "none",
             "-no-fd-bootchk",
             "-nographic",
             "-enable-kvm",
@@ -79,7 +78,10 @@ class JobRunner(threading.Thread):
             "-drive",
             "file=debian.raw,index=0,media=disk,snapshot=on",
             "-drive",
-            "file=job.img,index=1,media=disk"],
+            "file=job.img,index=1,media=disk"]
+        if not self.config.enable_networking:
+            args.extend(["-net", "none"])
+        self.vmProcess = subprocess.Popen(args, 
             stdin=None, stdout=NULL, stderr=subprocess.STDOUT,
             close_fds=True)
         self.logger.info("Started with pid %i" % self.vmProcess.pid)
@@ -159,6 +161,7 @@ def main():
     parser.add_argument("--queue", help = "Directory to queue", default = "./queue")
     parser.add_argument("--done", help = "Directory to store finalized jobs", default = "./done")
     parser.add_argument("--disable-compression", help = "Do not compress the job output", action="store_true")
+    parser.add_argument("--enable-networking", help = "Allow the job to access the network. Enable only on trusted jobs!", action="store_true")
 
     config = parser.parse_args()
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
