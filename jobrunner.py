@@ -10,7 +10,8 @@ import datetime
 import argparse
 
 NULL = file(os.path.devnull, 'w')
-
+HOUR = 60*60
+MAXIMUM_JOB_TIME = 3 * HOUR
 wm = pyinotify.WatchManager()
 jobQueue = Queue.Queue()
 
@@ -52,7 +53,7 @@ class JobRunner(threading.Thread):
     def waitForEndOfRunningJob(self):
         if self.vmProcess != None:
             self.logger.info("Waiting for job to finish")
-            timeout = time.time() + 60*5
+            timeout = time.time() + MAXIMUM_JOB_TIME
             while self.vmProcess.returncode == None and time.time() < timeout:
                 #TODO Use vmProcess.wait(timeout=20) when 3.3 has hits the debian servers
                 self.vmProcess.poll()
