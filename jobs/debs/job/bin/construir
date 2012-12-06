@@ -1,0 +1,21 @@
+#!/bin/bash
+export PATH=/job/bin:/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+set -e
+function cleanup(){
+    find /job -maxdepth 1 -mindepth 1 -not -name output -exec rm -rf {} +
+}
+
+function job(){
+    sleep 10 #Wait for network to come up
+    apt-get update
+    for deblist in /job/lists/*; do
+        listname="`basename $deblist`"
+        apt-get clean
+        xargs apt-get install -y -d < "$deblist"
+        mkdir -p "/job/output/$listname/"
+        cp /var/cache/apt/archives/*.deb "/job/output/$listname/"
+    done
+    cleanup
+}
+mkdir -p /job/output
+job > /job/output/output.txt 2>&1
