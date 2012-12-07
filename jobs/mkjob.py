@@ -5,7 +5,7 @@ import argparse
 import sys
 import subprocess
 
-NULL = file(os.path.devnull, 'w')
+NULL = file(os.path.devnull, "w")
 MB = 1024 #Blocks
 GB = 1024*MB
 
@@ -25,7 +25,7 @@ class Job:
         self.image = outputImage
 
     def size(self):
-        '''Size for this job image'''
+        """Size for this job image"""
         return self.jobSize() + self.extraSpace
 
     def setExtraSpace(self, size):
@@ -47,38 +47,39 @@ class Job:
         assert self.path
         assert os.path.exists(self.path)
         jobSize = self.size()
-        cmd = ['genext2fs', 
-            '--root', self.path,
-            '--size-in-blocks', str(jobSize),
-            '--number-of-inodes', str(self.numberOfInodesForSize(jobSize)),
+        cmd = ["genext2fs", 
+            "--root", self.path,
+            "--size-in-blocks", str(jobSize),
+            "--reserved-percentage", "0",
+            "--number-of-inodes", str(self.numberOfInodesForSize(jobSize)),
             self.image]
         status = subprocess.call(cmd)
         assert status == 0
 
     def __str__(self):
-        return "Job '%s' -> '%s'" %(self.path, self.image)
+        return 'Job "%s" -> "%s"' % (self.path, self.image)
 
 def main():
-    parser = argparse.ArgumentParser(description='Create construir job images from a directory')
-    parser.add_argument('job_directory',
-                   help='The directory to create a job image from')
-    parser.add_argument('--extra-space', dest="extra_space",
+    parser = argparse.ArgumentParser(description="Create construir job images from a directory")
+    parser.add_argument("job_directory",
+                   help="The directory to create a job image from")
+    parser.add_argument("--extra-space", dest="extra_space",
                    default=15, type=int,
-                   help='The number of extra megabytes needed in image')
+                   help="The number of extra megabytes needed in image")
 
     config = parser.parse_args()
     if not os.path.exists(config.job_directory):
-        logging.error("Given job directory '%s' does not exist" % config.job_directory)
+        logging.error('Given job directory "%s" does not exist' % config.job_directory)
         return 1
     if not os.path.isdir(config.job_directory):
-        logging.error("Directory argument '%s' is not a directory" % config.job_directory)
+        logging.error('Directory argument "%s" is not a directory' % config.job_directory)
     if not genext2fs_available():
         logging.error("Could not find genext2fs to create image")
         return 1
-    construirScript = os.path.join(config.job_directory, 'bin', 'construir')
+    construirScript = os.path.join(config.job_directory, "bin", "construir")
     if not os.path.exists(construirScript):
         logging.error("Job directory did not contain construir script")
-        logging.error("Missing file '%s'" % construirScript)
+        logging.error('Missing file "%s"' % construirScript)
         return 1
 
     #Calculate job size
