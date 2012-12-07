@@ -1,6 +1,6 @@
 #!/bin/bash
 export HOME=/root
-export PATH=/job/bin:/opt/bin:$PATH
+export PATH=/job/bin:/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 set -e -x
 function cleanup(){

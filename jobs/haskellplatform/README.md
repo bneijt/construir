@@ -2,6 +2,12 @@ Create a tar file in the output directory containing
 the Haskell platform installation in /opt
 
 Requires the `opt_ghc.tar` from the ghc job.
+It also requires debian archives in the
+job/debs directory to install.
+
+You can download these running the `debs` job on a
+jobrunner with networking enabled.
+
 And a lot of debian packages, including:
     job/debs/
     job/debs/mesa-common-dev_7.7.1-5_amd64.deb
@@ -42,5 +48,3 @@ And a lot of debian packages, including:
     job/debs/libgl1-mesa-dev_7.7.1-5_amd64.deb
     job/debs/libgl1-mesa-glx_7.7.1-5_amd64.deb
 
-The plan is to create a job to do debian archive downloads on
-a jobrunner with network support.
