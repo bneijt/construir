@@ -1,0 +1,32 @@
+#!/bin/bash
+export HOME=/root
+export PATH=/root/.cabal/bin:/job/bin:/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+function cleanup(){
+    echo "----- CLEANUP"
+    find /job -maxdepth 1 -mindepth 1 -not -name output -exec rm -rf {} +
+}
+
+function job(){
+    dpkg -i debs/x11-common*
+    dpkg -i debs/*.deb
+    rm -rf /job/debs
+    mv /job/pkg/.cabal /root/
+    tar -C / -xjf /job/opt_haskell-platform-HP_VERSION.tar.bz2
+    cleanup
+    date -R > /job/output/cabal_output.txt
+    cabal --reinstall install PKGNAME >> /job/output/cabal_output.txt 2>&1
+}
+
+function versions(){
+    echo "cabal"
+    cabal --version
+    echo "ghc"
+    ghc --version
+}
+
+mkdir -p /job/output
+versions > /job/output/versions.txt 2>&1
+job > /job/output/output.txt 2>&1
+
+

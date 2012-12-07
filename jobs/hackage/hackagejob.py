@@ -5,9 +5,11 @@ import argparse
 import sys
 import subprocess
 import shutil
+import stat
 
-NULL = file(os.path.devnull, 'w')
-
+NULL = file(os.path.devnull, "w")
+EXEC_PERMS = stat.S_IXUSR | stat.S_IRUSR | stat.S_IWUSR | stat.S_IXGRP | stat.S_IRGRP | stat.S_IXOTH | stat.S_IROTH
+HP_VERSION = "2012.4.0.0"
 def cabal(cmd):
     environment = os.environ.copy()
     environment["HOME"] = os.path.realpath("job/pkg")
@@ -57,14 +59,19 @@ def main():
         localPath = os.path.realpath("job/pkg")
         buildserverPath = "/root"
         searchAndReplaceInCabalConfig(localPath, buildserverPath)
+        if not os.path.exists("job/bin"):
+            os.mkdir("job/bin")
         if os.path.exists("job/bin/construir"):
             os.unlink("job/bin/construir")
-        shutil.copy("construir", "job/bin/construir")
+        shutil.copy("construir.template", "job/bin/construir")
+        os.chmod("job/bin/construir", EXEC_PERMS)
         searchAndReplaceInFile("PKGNAME", pkg_name, "job/bin/construir")
+        searchAndReplaceInFile("HP_VERSION", HP_VERSION, "job/bin/construir")
         print("Running mkjob.py")
-        rstatus = subprocess.call(["../mkjob.py", "--extra-space", "100", "job"])
+        rstatus = subprocess.call(["../mkjob.py", "--extra-space", "1000", "job"])
         assert rstatus == 0
         os.rename("job.ext2", pkg_name + ".ext2")
+        return 0
 
 if __name__ == "__main__":
     sys.exit(main())
