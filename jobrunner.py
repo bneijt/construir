@@ -89,7 +89,7 @@ class JobRunner(threading.Thread):
 
     def saveJobImage(self):
         assert self.currentJob
-        outputName =  datetime.datetime.now().strftime("%Y-%m-%sT%H_%M_%S") + "_" + os.path.basename(self.currentJob.path)
+        outputName = os.path.basename(self.currentJob.path) + "_" + datetime.datetime.now().strftime("%Y-%m-%sT%H_%M_%S") + ".ext2"
         self.logger.info("Saving output to: " + outputName)
         outputPath = os.path.join(self.config.done, outputName)
         if self.config.disable_compression:
