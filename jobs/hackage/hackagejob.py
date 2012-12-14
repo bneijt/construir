@@ -70,7 +70,7 @@ def main():
         print("Running mkjob.py")
         rstatus = subprocess.call(["../mkjob.py", "--extra-space", "1000", "job"])
         assert rstatus == 0
-        os.rename("job.ext2", pkg_name + ".ext2")
+        os.rename("job.ext2", pkg_name)
         return 0
 
 if __name__ == "__main__":
