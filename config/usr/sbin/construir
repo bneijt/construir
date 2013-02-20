@@ -1,9 +1,0 @@
-#!/bin/bash
-/bin/rm -rf /job/zero
-cd /job
-env --ignore-environment /job/bin/construir || sleep 5m
-/bin/dd if=/dev/zero of=/job/zero
-/sbin/poweroff
-
-
-
