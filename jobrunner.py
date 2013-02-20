@@ -8,6 +8,7 @@ import time
 import logging
 import datetime
 import argparse
+import re
 
 NULL = file(os.path.devnull, 'w')
 HOUR = 60*60
@@ -29,15 +30,28 @@ class JobLogger:
         self.logger.error("[%s] %s" % (self.jobName, msg))
 
 class Job:
+    imageNumberPattern = re.compile("_i([0-9]+)")
+
     def __init__(self, path):
         self.path = path
         self.size = os.path.getsize(path)
     def changed(self):
         return self.size != os.path.getsize(self.path)
+    def imageNumber(self):
+        matchingJob = Job.imageNumberPattern.search(self.path)
+        if matchingJob != None:
+            return matchingJob.group(1)
+        return None
+    def doneName(self):
+        basename = os.path.basename(self.path)
+        return Job.imageNumberPattern.sub("_d\\1", basename)
+
 
 class JobRunner(threading.Thread):
     vmProcess = None
     currentJob = None
+    runningJobPath = "job.tar.xz"
+
     def __init__(self, config):
         threading.Thread.__init__(self)
         self.logger = JobLogger(None)
@@ -66,20 +80,31 @@ class JobRunner(threading.Thread):
 
     def startJob(self):
         self.logger.info("Start")
-        os.rename(self.currentJob.path, "job.img")
-        assert os.path.exists("job.img")
-        assert os.path.exists("debian.raw")
+
+        os.rename(self.currentJob.path, self.runningJobPath)
+        assert os.path.exists(self.runningJobPath)
+        #Determine the image it should run with
+        #Determine image name
+        requestedImage = self.currentJob.imageNumber()
+        if requestedImage == None:
+            self.logger.info("No image spec found in job name, skipping")
+            return
+        requestedImagePath = os.path.join(self.config.image, "i" + requestedImage + ".raw")
+        if not os.path.exists(requestedImagePath):
+            self.logger.error("Requested image %s not found" % requestedImagePath)
+            return
+        assert os.path.exists(requestedImagePath)
         args = [
             "/usr/bin/kvm",
             "-no-fd-bootchk",
             "-nographic",
             "-enable-kvm",
             "-no-reboot",
-            "-m", "1G",
+            "-m", "512M",
             "-drive",
-            "file=debian.raw,index=0,media=disk,snapshot=on",
+            "file=" + requestedImagePath + ",index=0,media=disk,snapshot=on,format=raw",
             "-drive",
-            "file=job.img,index=1,media=disk"]
+            "file=" + self.runningJobPath + ",index=1,media=disk,format=raw"]
         if not self.config.enable_networking:
             args.extend(["-net", "none"])
         self.vmProcess = subprocess.Popen(args, 
@@ -89,26 +114,16 @@ class JobRunner(threading.Thread):
 
     def saveJobImage(self):
         assert self.currentJob
-        outputName = os.path.basename(self.currentJob.path) + "_" + datetime.datetime.now().strftime("%Y-%m-%sT%H_%M_%S") + ".ext2"
+        outputName = self.currentJob.doneName()
         self.logger.info("Saving output to: " + outputName)
         outputPath = os.path.join(self.config.done, outputName)
-        if self.config.disable_compression:
-            os.rename("job.img", outputPath)
-        else:
-            outputPath = outputPath + ".bz2"
-            bz = subprocess.Popen(["bzip2", "-c", "job.img"],
-                stdin=None, stdout=file(outputPath, "w"), stderr=subprocess.PIPE)
-            (stdoutdata, stderrdata) = bz.communicate()
-            bz.wait()
-            if len(stderrdata):
-                logger.error("bzip2 reported errors '%s'" % stderrdata)
-            os.unlink("job.img")
-        assert not os.path.exists("job.img")
+        os.rename(self.runningJobPath, outputPath)
+        assert not os.path.exists(self.runningJobPath)
 
     def moveJobToDone(self):
         assert self.vmProcess == None
         self.logger.info("Moving job to done")
-        if os.path.exists("job.img"):
+        if os.path.exists(self.runningJobPath):
             if self.currentJob != None:
                 self.saveJobImage()
             self.currentJob = None
@@ -161,8 +176,8 @@ def main():
     parser = argparse.ArgumentParser(description='Run construir jobs entered into the queue directory')
     parser.add_argument("--queue", help = "Directory to queue", default = "./queue")
     parser.add_argument("--done", help = "Directory to store finalized jobs", default = "./done")
-    parser.add_argument("--disable-compression", help = "Do not compress the job output", action="store_true")
-    parser.add_argument("--enable-networking", help = "Allow the job to access the network. Enable only on trusted jobs!", action="store_true")
+    parser.add_argument("--image", help = "Directory containing images", default = "./image")
+    parser.add_argument("--enable-networking", help = "Allow the job to access the network. Enable only on trusted job queues!", action="store_true")
 
     config = parser.parse_args()
     logging.basicConfig(format='%(asctime)s %(message)s', level=logging.DEBUG)
@@ -170,9 +185,6 @@ def main():
         os.mkdir(config.done)
     if not os.path.exists(config.queue):
         os.mkdir(config.queue)
-    if not os.path.exists("debian.raw"):
-        logging.error("Could not find guest image ./debian.raw")
-        return 1
 
     jr = JobRunner(config)
     jr.start()

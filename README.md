@@ -5,7 +5,18 @@ The mean goal of construir is to set up a secure way to allow a build system to 
 
 Status
 =======
-The `jobrunner.py` script will run job files form the queue directory. Creating job images is done using the `jobs/mkjob.py` script, which takes a directory as it's first argument.
+After working with the creation of ext images using userspace tools, I've decided to drop full disk images and go with tar.xz files.
+
+The new approach is as follows:
+- Tar your files into an archive using tar -cJf archive.tar.xz yourfiles
+- Truncate the tar file to the size you require it to be for your output: truncate --size 10m archive.tar.xz
+- Rename the file to contain the image you want it to run on and something to identify it: jobname_i100.tar.xz
+
+Drop the file in the queue directory, and the jobrunner will pick it up. When it's done, it will rename the image identification from "i100" to "d100" to mark the job as done.
+
+Jobs are not allowed to take more then 3 hours.
+
+
 
 First release is still to be made, nothing has a version number yet.
 

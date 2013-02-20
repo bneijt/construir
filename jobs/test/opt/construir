@@ -1,0 +1,3 @@
+#!/bin/bash
+#Package construir files up into a package
+tar -cJf /dev/sdb /usr/bin/construir* /etc/systemd/system/construir*
