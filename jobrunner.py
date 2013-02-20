@@ -89,7 +89,7 @@ class JobRunner(threading.Thread):
         if requestedImage == None:
             self.logger.info("No image spec found in job name, skipping")
             return
-        requestedImagePath = os.path.join(self.config.image, "i" + requestedImage + ".raw")
+        requestedImagePath = os.path.join(self.config.image, "i" + requestedImage + ".qcow2")
         if not os.path.exists(requestedImagePath):
             self.logger.error("Requested image %s not found" % requestedImagePath)
             return

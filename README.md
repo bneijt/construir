@@ -5,56 +5,48 @@ The mean goal of construir is to set up a secure way to allow a build system to 
 
 Status
 =======
-After working with the creation of ext images using userspace tools, I've decided to drop full disk images and go with tar.xz files.
-
-The new approach is as follows:
-- Tar your files into an archive using tar -cJf archive.tar.xz yourfiles
-- Truncate the tar file to the size you require it to be for your output: truncate --size 10m archive.tar.xz
-- Rename the file to contain the image you want it to run on and something to identify it: jobname_i100.tar.xz
+There is a basic image with a completely new approach and currently the jobs have to be recreated to conform to the new standard.
 
 Drop the file in the queue directory, and the jobrunner will pick it up. When it's done, it will rename the image identification from "i100" to "d100" to mark the job as done.
 
 Jobs are not allowed to take more then 3 hours.
 
 
-
 First release is still to be made, nothing has a version number yet.
 
 How it works
 ============
-A Debian system is booted with a root file system in snapshot mode and a job image (file system image) in writable mode. The job can then create, delete and add files anywhere with root privileges. After the job is done, the system is automatically shut down.
+When a file is added to the queue directory, `jobrunner.py` will pick it up and start kvm with image/i0.qcow2 as the first disk and the job as the second disk.
 
-A simple job tracker will move job images from a queue folder, boot the machine with the job image, kill the machine if it takes more then two hours to complete and finally place the resulting job image in the done folder in `xz` compressed form.
+There is no network access for the job and after it is done, the machine will shutdown and the job will be moved to the done directory.
+
+A job can output by using the space of the device, this means a job must know it's output size before hand.
+
 
 Execute `./jobrunner.py`, then add a job image to the `queue` directory to see it working.
 
 
-Current image
-=============
-You can download a basic debian image with the software installed from github. The password for the root user is `root`.
+Build images
+============
+There can be multiple version of a build system to kick of a job, each has it's own number which is listed in [image README on the git repository](https://github.com/bneijt/construir/tree/master/image).
 
 
-Creating a base image by hand
-=============================
-To create the base image, I did the following:
 
- - Use the Debian `netinst` image in expert install mode to create a minimal Debian installation
- - Remove unneeded packages where appropriate
- - Install build-essential and bzip2
- - Mount the disk image separately (using the `rawmount.sh` script running it as root)
- - Copy all the files from the `config` directory onto the filesystem.
- - Boot the system and run `update-rc.d construir defaults`
+Creating a job
+==============
+You can look at the example jobs in the jobs directory of this repository, but the basic idea is very simple:
 
-The `/usr/sbin/construir` script will try to run a job script from `/job/bin/construir`,
-create a `/job/zero` file and `poweroff`.
-This means you will no longer be able to boot and log in without a job. 
-To disable it, use the `rawmount.sh` script to mount and comment out
-the `poweroff` in `/usr/sbin/construir`. 
+1. Create a bash script under the name `opt/construir` and add the following code to it:
 
-There is currently no script for this process, however you can download a pre-made Debian image from the download section.
+    date > /tmp/test.txt
+    tar -cJf /dev/sdb /tmp/test.txt
 
-Creating a job image
-====================
-Create a directory with a bash script under the path `bin/construir` and package it up into an ext2 filesystem image. Use the `jobs/mkjob.py` script with the directory as an argument, which will create an ext2 image with the same name as the directory.
+2. Package that script into an XZ compressed tar archive, put i0 in the filename to make it run on the image with index 0:
 
+    tar -cJf testjob_i0.tar.xz opt
 
+3. Increase the size of the job to make sure it can contain all the extra output:
+
+    truncate +1M testjob_i0.tar.xz
+
+That's it. Now put the job in a queue directory of a `jobrunner.py`.
