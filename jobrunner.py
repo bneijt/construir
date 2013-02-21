@@ -102,7 +102,7 @@ class JobRunner(threading.Thread):
             "-no-reboot",
             "-m", "512M",
             "-drive",
-            "file=" + requestedImagePath + ",index=0,media=disk,snapshot=on,format=raw",
+            "file=" + requestedImagePath + ",index=0,media=disk,snapshot=on",
             "-drive",
             "file=" + self.runningJobPath + ",index=1,media=disk,format=raw"]
         if not self.config.enable_networking:
