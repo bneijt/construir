@@ -1,6 +1,8 @@
 
 cd "`dirname "$0"`"
 /bin/bash extract_versions > versions.txt 2>&1
-tar -cJf /dev/sdb versions.txt
+echo '{status:"success"}' > summary.json
+tar -cJf /dev/sdb versions.txt summary.json
+
 
 

@@ -14,5 +14,3 @@ python --version
 g++ --version
 
 ghc --version
-
-
