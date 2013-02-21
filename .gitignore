@@ -1,4 +1,4 @@
 jobserver/dist
 jobserver/log
 .ghci
-debian.raw
+image/*.qcow2

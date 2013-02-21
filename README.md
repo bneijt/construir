@@ -16,7 +16,7 @@ First release is still to be made, nothing has a version number yet.
 
 How it works
 ============
-When a file is added to the queue directory, `jobrunner.py` will pick it up and start kvm with image/i0.qcow2 as the first disk and the job as the second disk.
+When a file is added to the queue directory, `jobrunner.py` will pick it up and start kvm with `image/i0.qcow2` as the first disk and the job as the second disk.
 
 There is no network access for the job and after it is done, the machine will shutdown and the job will be moved to the done directory.
 
@@ -30,13 +30,11 @@ Build images
 ============
 There can be multiple version of a build system to kick of a job, each has it's own number which is listed in [image README on the git repository](https://github.com/bneijt/construir/tree/master/image).
 
-
-
 Creating a job
 ==============
 You can look at the example jobs in the jobs directory of this repository, but the basic idea is very simple:
 
-1. Create a bash script under the name `opt/construir` and add the following code to it:
+1. Create a bash script under the name `job/construir` and add the following code to it:
 
     date > /tmp/test.txt
     tar -cJf /dev/sdb /tmp/test.txt
