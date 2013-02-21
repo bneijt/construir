@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -x
+lsb_release -a
+
+uname -a
+
+ls --version
+
+env
+
+python --version
+
+g++ --version
+
+ghc --version
+
+
