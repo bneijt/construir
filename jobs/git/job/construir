@@ -1,0 +1,14 @@
+set -x
+mkdir -p /repo/artifacts
+cd /repo
+#If it's executable, execute it, otherwise source it
+pwd
+if [ -x construir ]; then
+    echo "Executing construir script"
+    ./construir 
+else
+    echo "Using bash to execute construir"
+    /bin/bash ./construir 
+fi
+
+tar --directory /repo/artifacts -cJf /dev/sdb . /job_output.txt
