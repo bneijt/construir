@@ -1,8 +1,9 @@
 
 cd "`dirname "$0"`"
 /bin/bash extract_versions > versions.txt 2>&1
+/usr/bin/pacman -Qi > pacman_installed.txt 2>&1
 echo '{status:"success"}' > summary.json
-tar -cJf /dev/sdb versions.txt summary.json
+tar -cJf /dev/sdb versions.txt summary.json pacman_installed.txt /job_output.txt
 
 
 
