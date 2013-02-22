@@ -1,0 +1,12 @@
+#!/bin/bash
+export HOME=/root
+export PATH=/root/.cabal/bin:/job/bin:/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+cabal --version
+ghc --version
+
+cd /job/repo
+cabal install --verbose && echo "*** Build successful"
+
+tar -cJf /dev/sdb /job_output.txt
+
