@@ -48,3 +48,9 @@ You can look at the example jobs in the jobs directory of this repository, but t
     truncate +1M testjob_i0.tar.xz
 
 That's it. Now put the job in a queue directory of a `jobrunner.py`.
+
+Caveats
+=======
+
+ * A job may not be smaller then approximately 500K.
+
