@@ -1,3 +1,3 @@
 #!/bin/bash
-tar -v -cJf test.tar.xz job
-truncate -s 1M test.tar.xz
+tar -v -cJf test_i0.tar.xz job
+truncate -s +500K test_i0.tar.xz
