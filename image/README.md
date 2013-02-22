@@ -15,10 +15,10 @@ i0
 Arch Linux installation with nothing installed. Bare minimal image.
 
  * Status: Final
- * SHA1: 4eef182f3412c970050549ddd78453fa2f944c4f
+ * SHA1: 2b1a955ec22463c48b3a399bf9db7716fa9c4f47
  * Locations:
    [bneijt.nl](http://bneijt.nl/pr/construir/image/i0.qcow2)
-   [mega.co.nz](https://mega.co.nz/#!p4NWVagb!DvPD4DEhXzr_iQ-vNEzb2SFk_kQEBZZl8FR8eFGHYv0)
+   [mega.co.nz]()
 
 
 
