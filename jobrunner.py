@@ -9,12 +9,34 @@ import logging
 import datetime
 import argparse
 import re
+import io
+
+import binascii
 
 NULL = file(os.path.devnull, 'w')
-HOUR = 60*60
-MAXIMUM_JOB_TIME = 3 * HOUR
+MINUTES = 60
+MAXIMUM_JOB_TIME = 30 * MINUTES
 wm = pyinotify.WatchManager()
 jobQueue = Queue.Queue()
+
+#TODO
+def trimTrailingZeroBytesOf(path):
+    '''Trim all the zero bytes at the end of a file'''
+    BLOCK_SIZE = 1024
+    f = file(path, 'r+b')
+    lastNonZeroIndex = 0
+    while True:
+        blockPosition = f.tell()
+        block = f.read(BLOCK_SIZE)
+        if not block:
+            break
+        for idx in range(block
+        for i in block:
+            if i != '\x00':
+                lastNonZeroIndex = f.tell()
+    f.truncate(lastNonZeroIndex)
+    f.close()
+
 
 class JobLogger:
     def __init__(self, jobName):
@@ -30,7 +52,7 @@ class JobLogger:
         self.logger.error("[%s] %s" % (self.jobName, msg))
 
 class Job:
-    imageNumberPattern = re.compile("_i([0-9]+)")
+    imageNumberPattern = re.compile("_i([0-9]+)\\.tar\\.xz")
 
     def __init__(self, path):
         self.path = path
@@ -44,7 +66,7 @@ class Job:
         return None
     def doneName(self):
         basename = os.path.basename(self.path)
-        return Job.imageNumberPattern.sub("_d\\1", basename)
+        return Job.imageNumberPattern.sub("_d\\1.tar.xz", basename)
 
 
 class JobRunner(threading.Thread):
@@ -71,7 +93,7 @@ class JobRunner(threading.Thread):
             while self.vmProcess.returncode == None and time.time() < timeout:
                 #TODO Use vmProcess.wait(timeout=20) when 3.3 has hits the debian servers
                 self.vmProcess.poll()
-                time.sleep(20)
+                time.sleep(10)
             if self.vmProcess.returncode == None:
                 self.logger.warn("Killing job")
                 self.vmProcess.kill()
@@ -114,6 +136,7 @@ class JobRunner(threading.Thread):
 
     def saveJobImage(self):
         assert self.currentJob
+        #trimTrailingZeroBytesOf(self.runningJobPath)
         outputName = self.currentJob.doneName()
         self.logger.info("Saving output to: " + outputName)
         outputPath = os.path.join(self.config.done, outputName)
@@ -173,6 +196,7 @@ class QueueEventHandler(pyinotify.ProcessEvent):
         jobQueue.put(Job(os.path.join(self.config.queue, jobName)))
 
 def main():
+    os.nice(10)
     parser = argparse.ArgumentParser(description='Run construir jobs entered into the queue directory')
     parser.add_argument("--queue", help = "Directory to queue", default = "./queue")
     parser.add_argument("--done", help = "Directory to store finalized jobs", default = "./done")
