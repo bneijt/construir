@@ -3,3 +3,5 @@ jobserver/log
 jobserver/site_key.txt
 .ghci
 image/*.qcow2
+*.pyc
+done
