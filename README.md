@@ -3,22 +3,25 @@ Construir: _everybody can join_
 The mean goal of construir is to set up a secure way to allow a build system to build jobs submitted by other people or a centralized server.
 
 
-Status
+Roadmap
 =======
-There is a basic image with a completely new approach and currently the jobs have to be recreated to conform to the new standard.
+Done
 
-Drop the file in the queue directory, and the jobrunner will pick it up. When it's done, it will rename the image identification from "i100" to "d100" to mark the job as done.
+ - Build image created
+ - Test job created and a script to package up a git repo as a job
 
-Jobs are not allowed to take more then 3 hours.
+Currently being done
 
+ - Create a more or less feature complete image, to do most of the build heavy lifting
 
-First release is still to be made, nothing has a version number yet.
+**Future:** The future is to create a website that will host jobs and results. The jobrunner will then be transformed into a job that download, executes and then uploads a job, making it possible for people to run such a jobrunner at home or on their spare server.
+
 
 How it works
 ============
 When a file is added to the queue directory, `jobrunner.py` will pick it up and start kvm with `image/i0.qcow2` as the first disk and the job as the second disk.
 
-There is no network access for the job and after it is done, the machine will shutdown and the job will be moved to the done directory.
+There is **no network access for the job** and after it is done, the machine will shutdown and the job will be moved to the done directory.
 
 A job can output by using the space of the device, this means a job must know it's output size before hand.
 
@@ -36,18 +39,22 @@ You can look at the example jobs in the jobs directory of this repository, but t
 
 1. Create a bash script under the name `job/construir` and add the following code to it:
 
-    date > /tmp/test.txt
-    tar -cJf /dev/sdb /tmp/test.txt
+        date > /tmp/test.txt
+        tar -cJf /dev/sdb /tmp/test.txt
 
 2. Package that script into an XZ compressed tar archive, put i0 in the filename to make it run on the image with index 0:
 
-    tar -cJf testjob_i0.tar.xz opt
+        tar -cJf testjob_i0.tar.xz opt
 
 3. Increase the size of the job to make sure it can contain all the extra output:
 
-    truncate +1M testjob_i0.tar.xz
+        truncate +1M testjob_i0.tar.xz
 
 That's it. Now put the job in a queue directory of a `jobrunner.py`.
+
+Creating a build image
+======================
+See the [build image readme](tree/master/image).
 
 Caveats
 =======
