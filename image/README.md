@@ -18,7 +18,6 @@ Arch Linux installation with nothing installed. Bare minimal image.
  * Status: Final
  * SHA1: 73670e2a857f1c57731df69b74e7d11f329d84ce
  * Locations:
-   [bneijt.nl](http://bneijt.nl/pr/construir/image/i0.qcow2)
    [mega.co.nz](https://mega.co.nz/#!gslVUbxY!BdocrV4Kau59GebjZXX4UEH3jttCJaIVHDXUE3KKSfI)
 
 
